@@ -1,0 +1,170 @@
+<div class="root">
+  <div class="layout">
+
+    <!-- ═══ LEFT: История ═══ -->
+    <div class="panel panel-left">
+      <div class="history-title">История боя</div>
+      <div *ngIf="history.length === 0" class="history-empty">— пусто —</div>
+      <div class="history-list">
+        <div *ngFor="let r of history"
+             class="hist-row"
+             [class.win]="r.winner === 'Игрок'"
+             [class.lose]="r.winner === 'Компьютер'">
+          <img [src]="choiceImage[r.player]"   [alt]="r.player"   class="hist-img" />
+          <span class="hist-sep">vs</span>
+          <img [src]="choiceImage[r.computer]" [alt]="r.computer" class="hist-img" />
+          <span class="hist-result">
+            {{ r.winner === 'Игрок' ? '✓' : r.winner === 'Компьютер' ? '✗' : '—' }}
+          </span>
+        </div>
+      </div>
+      <button class="history-reset-btn" (click)="resetGame()">сбросить</button>
+    </div>
+
+    <!-- ═══ CENTER: Арена + Кнопки ═══ -->
+    <div class="arena-wrap">
+
+      <!-- Красный экран боя -->
+      <div class="battle-screen">
+        <div class="battle-title">✦Камень · Ножницы · Бумага · Ящерица · Спок✦</div>
+
+        <div class="fighters">
+
+          <!-- Игрок -->
+          <div class="fighter">
+            <div class="choice-display">
+              <!-- Пустышка до первого хода -->
+              <span *ngIf="!animating && !playerChoice" class="choice-placeholder">?</span>
+              <!-- Рулетка — видна только во время анимации -->
+              <div class="spin-strip" #playerStrip [style.display]="animating ? 'flex' : 'none'">
+                <div *ngFor="let item of reel" class="spin-item">
+                  <img [src]="choiceImage[item]" [alt]="item" />
+                </div>
+              </div>
+              <!-- Результат — после остановки -->
+              <img *ngIf="!animating && playerChoice"
+                   [src]="choiceImage[playerChoice]"
+                   [alt]="playerChoice"
+                   class="choice-img" />
+            </div>
+            <span class="fighter-label">Игрок</span>
+          </div>
+
+          <div class="vs-badge">VS</div>
+
+          <!-- Компьютер -->
+          <div class="fighter">
+            <div class="choice-display">
+              <span *ngIf="!animating && !computerChoice" class="choice-placeholder">?</span>
+              <div class="spin-strip" #computerStrip [style.display]="animating ? 'flex' : 'none'">
+                <div *ngFor="let item of reel" class="spin-item">
+                  <img [src]="choiceImage[item]" [alt]="item" />
+                </div>
+              </div>
+              <img *ngIf="!animating && computerChoice"
+                   [src]="choiceImage[computerChoice]"
+                   [alt]="computerChoice"
+                   class="choice-img" />
+            </div>
+            <span class="fighter-label">ПК</span>
+          </div>
+
+        </div>
+
+        <div class="result-bar">
+          <div class="result" *ngIf="roundResult"
+               [class.win]="roundResult === 'Вы победили!'"
+               [class.lose]="roundResult === 'Компьютер победил!'"
+               [class.draw]="roundResult === 'Ничья!'">
+            {{ roundResult }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Чёрная панель кнопок -->
+      <div class="action-bar">
+
+        <!-- Ручной режим -->
+        <ng-container *ngIf="mode === 'manual'">
+          <div class="move-buttons">
+            <button *ngFor="let c of choices"
+                    class="move-btn"
+                    (click)="play(c)"
+                    [disabled]="animating"
+                    [title]="c">
+              <img [src]="choiceImage[c]" [alt]="c" />
+            </button>
+          </div>
+          <button class="reset-btn" (click)="resetGame()">сбросить</button>
+        </ng-container>
+
+        <!-- Авто-батлер -->
+        <ng-container *ngIf="mode === 'auto'">
+          <div class="auto-bar">
+            <div class="auto-top">
+              <div class="preset-group">
+                <button class="preset-btn" [class.active]="autoRoundsTotal===5"  (click)="autoRoundsTotal=5"  [disabled]="autoRunning">5</button>
+                <button class="preset-btn" [class.active]="autoRoundsTotal===10" (click)="autoRoundsTotal=10" [disabled]="autoRunning">10</button>
+                <button class="preset-btn" [class.active]="autoRoundsTotal===20" (click)="autoRoundsTotal=20" [disabled]="autoRunning">20</button>
+                <button class="preset-btn" [class.active]="autoRoundsTotal===50" (click)="autoRoundsTotal=50" [disabled]="autoRunning">50</button>
+              </div>
+              <div class="preset-group">
+                <button class="preset-btn" [class.active]="autoSpeed===1200" (click)="autoSpeed=1200" [disabled]="autoRunning">x1</button>
+                <button class="preset-btn" [class.active]="autoSpeed===800"  (click)="autoSpeed=800"  [disabled]="autoRunning">x2</button>
+                <button class="preset-btn" [class.active]="autoSpeed===400"  (click)="autoSpeed=400"  [disabled]="autoRunning">x3</button>
+              </div>
+              <div class="action-btns">
+                <button class="start-btn" *ngIf="!autoRunning" (click)="startAuto()" [disabled]="autoFinished && autoRoundsPlayed > 0">▶ старт</button>
+                <button class="stop-btn"  *ngIf="autoRunning"  (click)="stopAuto()">⏹ стоп</button>
+                <button class="reset-btn" (click)="resetGame()">сброс</button>
+              </div>
+            </div>
+
+            <div class="progress-wrap" *ngIf="autoRunning || autoRoundsPlayed > 0">
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="autoProgress"></div>
+              </div>
+              <span class="progress-label">{{ autoRoundsPlayed }}/{{ autoRoundsTotal }}</span>
+            </div>
+
+            <div class="auto-leader" *ngIf="autoRunning">{{ autoLeader }}</div>
+
+            <div class="auto-final" *ngIf="autoFinished">
+              <span class="final-text">{{ autoWinner }}</span>
+              <span class="final-sub">{{ scores.player }}W · {{ scores.draw }}D · {{ scores.computer }}L</span>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+
+    <!-- ═══ RIGHT: Счёт + режим ═══ -->
+    <div class="panel panel-right">
+      <div class="panel-title">Счёт</div>
+      <div class="score-row">
+        <div class="score-item you">
+          <span class="score-name">Игрок</span>
+          <span class="score-val">{{ scores.player }}</span>
+        </div>
+        <div class="score-item draw">
+          <span class="score-name">Ничья</span>
+          <span class="score-val">{{ scores.draw }}</span>
+        </div>
+        <div class="score-item enemy">
+          <span class="score-name">ПК</span>
+          <span class="score-val">{{ scores.computer }}</span>
+        </div>
+      </div>
+
+      <img src="rules.png" alt="Правила" class="rules-img" />
+
+      <div class="panel-title">Режим</div>
+      <div class="mode-toggle">
+        <button class="tab-btn" [class.active]="mode==='manual'" (click)="setMode('manual')">Ручной</button>
+        <button class="tab-btn" [class.active]="mode==='auto'"   (click)="setMode('auto')">Авто-батлер</button>
+      </div>
+    </div>
+
+  </div>
+</div>

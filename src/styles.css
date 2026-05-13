@@ -1,1 +1,7 @@
-/* You can add global styles to this file, and also import other style files */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #0a0000;
+  font-family: 'Georgia', serif;
+  color: #f5e6e6;
+  overflow-x: hidden;
+}
