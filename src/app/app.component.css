@@ -491,8 +491,6 @@
   border-left: 2px solid #300000;
   font-size: 0.68rem;
 }
-.hist-row.win  { border-left-color: #4ade80; }
-.hist-row.lose { border-left-color: #ff6060; }
 
 .hist-img {
   width: 20px; height: 20px;
@@ -510,5 +508,3 @@
   color: #664444;
   flex-shrink: 0;
 }
-.hist-row.win  .hist-result { color: #4ade80; }
-.hist-row.lose .hist-result { color: #ff6060; }

@@ -13,7 +13,7 @@
           <span class="hist-sep">vs</span>
           <img [src]="choiceImage[r.computer]" [alt]="r.computer" class="hist-img" />
           <span class="hist-result">
-            {{ r.winner === 'Игрок' ? '✓' : r.winner === 'Компьютер' ? '✗' : '—' }}
+            {{ r.winner === 'Игрок' ? '+' : r.winner === 'Компьютер' ? 'x' : '—' }}
           </span>
         </div>
       </div>
