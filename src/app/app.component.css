@@ -207,9 +207,9 @@
   border: 2px solid;
   text-transform: uppercase;
 }
-.result.win  { background: rgba(0,50,15,0.85); color: #4ade80; border-color: #4ade80; }
-.result.lose { background: rgba(50,0,0,0.85);  color: #ff6060; border-color: #ff6060; }
-.result.draw { background: rgba(25,25,25,0.85); color: #ccc;    border-color: #555; }
+.result.win  { background: rgba(30,20,0,0.85);  color: #f0c040; border-color: #f0c040; }
+.result.lose { background: rgba(20,15,10,0.85); color: #a08060; border-color: #a08060; }
+.result.draw { background: rgba(20,20,20,0.85); color: #888888; border-color: #888888; }
 
 .action-bar {
   grid-column: 2;
