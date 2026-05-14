@@ -80,7 +80,10 @@ export class AppComponent implements OnDestroy {
 
     const oneLoop = this.choices.length * this.ITEM_H;
     y = y % -oneLoop;
-    if (y > 0) y -= oneLoop;
+    if (y > 0)
+    {
+      y -= oneLoop
+    };
 
     el.style.transition = 'none';
     el.style.transform  = `translateY(${y}px)`;
