@@ -52,11 +52,9 @@ export class AppComponent implements OnDestroy {
   history: GameResult[] = [];
   scores = { player: 0, computer: 0, draw: 0 };
 
-  // Полосы для рулетки — 3 копии списка = бесшовный цикл
   readonly ITEM_H = 120;
   reel: Choice[] = [...this.choices, ...this.choices, ...this.choices]; // 15 штук
 
-  // Auto
   autoRunning      = false;
   autoSpeed        = 800;
   autoRoundsTotal  = 10;
@@ -76,36 +74,25 @@ export class AppComponent implements OnDestroy {
     this.resetGame();
   }
 
-  // ─── Рулетка ───────────────────────────────────────────────────
-  // Логика: полоса крутится через CSS animation (translateY бесконечно),
-  // при остановке — вычисляем нужный translateY чтобы нужная картинка
-  // оказалась в центре, фиксируем его.
-
   private startReel(el: HTMLElement): void {
-    // Читаем текущую позицию (от предыдущей остановки)
     const m = el.style.transform.match(/translateY\(([-\d.]+)px\)/);
     let y = m ? parseFloat(m[1]) : 0;
 
-    // Нормализуем в диапазон одной петли (-600..0],
-    // чтобы анимация не стартовала из произвольного места
-    const oneLoop = this.choices.length * this.ITEM_H; // 600
+    const oneLoop = this.choices.length * this.ITEM_H;
     y = y % -oneLoop;
     if (y > 0) y -= oneLoop;
 
     el.style.transition = 'none';
     el.style.transform  = `translateY(${y}px)`;
-    void el.offsetHeight; // reflow — фиксируем позицию до старта анимации
+    void el.offsetHeight;
 
-    // Запускаем бесконечное кручение начиная с текущей позиции
     el.style.animation = `reelSpin 0.4s linear infinite`;
   }
 
   private stopReel(el: HTMLElement, finalChoice: Choice, onDone: () => void): void {
-    // Находим индекс во второй копии (5..9), чтобы был запас и до и после
-    const idx = this.choices.indexOf(finalChoice) + 5; // вторая копия
-    const targetY = -(idx * this.ITEM_H) + (0); // центр = верх ячейки
+    const idx = this.choices.indexOf(finalChoice) + 5;
+    const targetY = -(idx * this.ITEM_H) + (0);
 
-    // Читаем текущую позицию через getComputedStyle
     const computed = window.getComputedStyle(el).transform;
     let currentY = 0;
     if (computed && computed !== 'none') {
@@ -113,32 +100,20 @@ export class AppComponent implements OnDestroy {
       if (match) currentY = parseFloat(match[1]);
     }
 
-    // Останавливаем бесконечную анимацию, фиксируем текущую позицию
     el.style.animation  = 'none';
     el.style.transform  = `translateY(${currentY}px)`;
 
-    // Принудительный reflow
     void el.offsetHeight;
 
-    // Плавно докручиваем до нужной позиции
-    // Нужно крутить вперёд (вниз по translateY, т.е. более отрицательное значение)
-    // Убедимся что едем только вперёд
     let fromY = currentY;
-    // targetY всегда отрицательный и дальше чем текущий —
-    // если нет, добавим ещё один полный оборот (5 * ITEM_H)
     while (targetY > fromY - this.ITEM_H) {
-      // targetY нужен выше (меньше по значению), идём назад по числовой оси
-      // На самом деле targetY отрицательный, fromY тоже. Нам нужно targetY <= fromY
       break;
     }
 
-    // Нам нужно targetY < fromY (двигаем полосу вверх = крутим вперёд)
     let finalY = targetY;
-    // Если currentY уже ниже (меньше) чем target — добавляем обороты
     if (finalY > fromY) {
       finalY -= this.choices.length * this.ITEM_H * Math.ceil((finalY - fromY) / (this.choices.length * this.ITEM_H) + 1);
     }
-    // Гарантируем хотя бы полоборота докрутки для красоты
     if (fromY - finalY < this.ITEM_H * 2) {
       finalY -= this.choices.length * this.ITEM_H;
     }
@@ -152,7 +127,6 @@ export class AppComponent implements OnDestroy {
     setTimeout(() => onDone(), duration + 50);
   }
 
-  // ─── Запуск раунда ─────────────────────────────────────────────
 
   private runRound(playerChoice: Choice, compChoice: Choice, onDone: () => void): void {
     this.animating   = true;
@@ -164,14 +138,12 @@ export class AppComponent implements OnDestroy {
     const pEl = this.playerStripEl.nativeElement;
     const cEl = this.computerStripEl.nativeElement;
 
-    // Не сбрасываем позицию — startReel сам подхватит последнее значение
     void pEl.offsetHeight;
 
     setTimeout(() => {
       this.startReel(pEl);
       this.startReel(cEl);
 
-      // Крутим заданное время, потом тормозим
       const spinTime = 1400;
       this.stopTimeoutId = setTimeout(() => {
         this.zone.run(() => {
@@ -193,7 +165,6 @@ export class AppComponent implements OnDestroy {
     }, 30);
   }
 
-  // ─── Ручной режим ──────────────────────────────────────────────
 
   play(playerChoice: Choice): void {
     if (this.animating) return;
@@ -201,7 +172,6 @@ export class AppComponent implements OnDestroy {
     this.runRound(playerChoice, compChoice, () => {});
   }
 
-  // ─── Авто-батлер ───────────────────────────────────────────────
 
   startAuto(): void {
     if (this.autoRunning) return;
@@ -228,7 +198,6 @@ export class AppComponent implements OnDestroy {
     this.runRound(p, c, () => {
       this.autoRoundsPlayed++;
       this.cdr.detectChanges();
-      // Пауза между раундами
       this.autoStepTimeoutId = setTimeout(() => {
         this.zone.run(() => this.runAutoStep());
       }, 300);
@@ -258,7 +227,6 @@ export class AppComponent implements OnDestroy {
     return this.autoRoundsTotal > 0 ? (this.autoRoundsPlayed / this.autoRoundsTotal) * 100 : 0;
   }
 
-  // ─── Общее ─────────────────────────────────────────────────────
 
   private resolveRound(): void {
     if (!this.playerChoice || !this.computerChoice) return;
@@ -288,7 +256,6 @@ export class AppComponent implements OnDestroy {
     this.autoRoundsPlayed = 0;
     this.animating        = false;
     this.resetScoresAndHistory();
-    // Сбросить DOM полос если они есть
     setTimeout(() => {
       if (this.playerStripEl) {
         const p = this.playerStripEl.nativeElement;

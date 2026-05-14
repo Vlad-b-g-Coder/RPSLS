@@ -1,7 +1,6 @@
 <div class="root">
   <div class="layout">
 
-    <!-- ═══ LEFT: История ═══ -->
     <div class="panel panel-left">
       <div class="history-title">История боя</div>
       <div *ngIf="history.length === 0" class="history-empty">— пусто —</div>
@@ -21,21 +20,16 @@
       <button class="history-reset-btn" (click)="resetGame()">сбросить</button>
     </div>
 
-    <!-- ═══ CENTER: Арена + Кнопки ═══ -->
     <div class="arena-wrap">
 
-      <!-- Красный экран боя -->
       <div class="battle-screen">
         <div class="battle-title">✦Камень · Ножницы · Бумага · Ящерица · Спок✦</div>
 
         <div class="fighters">
 
-          <!-- Игрок -->
           <div class="fighter">
             <div class="choice-display">
-              <!-- Пустышка до первого хода -->
               <span *ngIf="!animating && !playerChoice" class="choice-placeholder">?</span>
-              <!-- Рулетка — видна только во время анимации -->
               <div class="spin-strip" #playerStrip [style.display]="animating ? 'flex' : 'none'">
                 <div *ngFor="let item of reel" class="spin-item">
                   <img [src]="choiceImage[item]" [alt]="item" />
@@ -52,7 +46,6 @@
 
           <div class="vs-badge">VS</div>
 
-          <!-- Компьютер -->
           <div class="fighter">
             <div class="choice-display">
               <span *ngIf="!animating && !computerChoice" class="choice-placeholder">?</span>
@@ -81,10 +74,8 @@
         </div>
       </div>
 
-      <!-- Чёрная панель кнопок -->
       <div class="action-bar">
 
-        <!-- Ручной режим -->
         <ng-container *ngIf="mode === 'manual'">
           <div class="move-buttons">
             <button *ngFor="let c of choices"
@@ -98,7 +89,6 @@
           <button class="reset-btn" (click)="resetGame()">сбросить</button>
         </ng-container>
 
-        <!-- Авто-батлер -->
         <ng-container *ngIf="mode === 'auto'">
           <div class="auto-bar">
             <div class="auto-top">
@@ -139,7 +129,6 @@
       </div>
     </div>
 
-    <!-- ═══ RIGHT: Счёт + режим ═══ -->
     <div class="panel panel-right">
       <div class="panel-title">Счёт</div>
       <div class="score-row">
