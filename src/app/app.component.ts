@@ -83,7 +83,7 @@ export class AppComponent implements OnDestroy {
     if (y > 0)
     {
       y -= oneLoop
-    };
+    }
 
     el.style.transition = 'none';
     el.style.transform  = `translateY(${y}px)`;
